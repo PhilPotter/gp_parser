@@ -25,6 +25,11 @@ Parser::Parser(const char *filePath)
 
 	// Close file
 	file.close();
+
+	// Begin parsing file data
+	readVersion();
+	if (!isSupportedVersion(version))
+		throw std::logic_error("Unsupported version");
 }
 
 /* This reads an unsigned byte from the file buffer and increments the
@@ -45,7 +50,7 @@ std::int8_t Parser::readByte()
  * mode and increments the position at the same time */
 std::int32_t Parser::readInt()
 {
-	int32_t returnVal = static_cast<int32_t>(
+	auto returnVal = static_cast<int32_t>(
 			    ((fileBuffer[bufferPosition + 3] & 0xFF) << 24) |
 			    ((fileBuffer[bufferPosition + 2] & 0xFF) << 16) |
 			    ((fileBuffer[bufferPosition + 1] & 0xFF) << 8) |
@@ -56,10 +61,66 @@ std::int32_t Parser::readInt()
 	return returnVal;
 }
 
+/* This version of the function takes no 'len' parameter and merely forwards
+ * through to the full method by setting 'len' to be equal to 'size' */
+std::string Parser::readString(size_t size)
+{
+	return readString(size, size);
+}
+
+/* This returns a string from the file buffer, in the general case by reading
+ * 'size' bytes from the file buffer then converting it to a string of 'len'
+ * bytes */
+std::string Parser::readString(size_t size, size_t len)
+{
+	// Work out number of bytes to read
+	auto bytesToRead = size > 0 ? size : len;
+
+	// Read this number of bytes from the file buffer
+	auto bytes = std::vector<char>(bytesToRead);
+	std::copy(fileBuffer.begin() + bufferPosition,
+		  fileBuffer.begin() + bufferPosition + bytesToRead,
+		  bytes.begin());
+
+	// Increment position
+	bufferPosition += bytesToRead;
+
+	// Convert to string and return
+	return std::string(bytes.begin(),
+			   len >= 0 && len <= bytesToRead ?
+			   (bytes.begin() + len) : (bytes.begin() + size));
+}
+
+/* This returns a string from the file buffer, but using a byte before it to
+ * tell it the length of the string */
+std::string Parser::readStringByte(size_t size)
+{
+	return readString(size, readUnsignedByte());
+}
+
 /* This just moves the position past 'n' number of bytes in the file buffer */
 void Parser::skip(std::size_t n)
 {
 	bufferPosition += n;
+}
+
+/* This reads the version data from the file buffer */
+void Parser::readVersion()
+{
+	version = readStringByte(30);
+}
+
+/* This checks if the supplied version is supported by the parser */
+bool Parser::isSupportedVersion(std::string& version)
+{
+	auto versionsCount = sizeof(VERSIONS) / sizeof(const char *);
+	for (size_t i; i < versionsCount; ++i) {
+		if (version.compare(VERSIONS[i]) == 0) {
+			versionIndex = i;
+			return true;
+		}
+	}
+	return false;
 }
 
 }
