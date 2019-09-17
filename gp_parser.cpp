@@ -3,6 +3,7 @@
 #include <stdexcept>
 #include <fstream>
 #include <iterator>
+#include <regex>
 #include "gp_parser.h"
 
 namespace gp_parser {
@@ -26,10 +27,69 @@ Parser::Parser(const char *filePath)
 	// Close file
 	file.close();
 
-	// Begin parsing file data
+	// Parse version and check it is supported
 	readVersion();
 	if (!isSupportedVersion(version))
 		throw std::logic_error("Unsupported version");
+
+	// Parse out major and minor version numbers
+	std::regex majorAndMinorExp("(\\d+)\\.(\\d+)");
+	major = std::stoi(std::regex_replace(
+			  version,
+			  majorAndMinorExp,
+			  "$1",
+			  std::regex_constants::format_no_copy));
+	minor = std::stoi(std::regex_replace(
+			  version,
+			  majorAndMinorExp,
+			  "$2",
+			  std::regex_constants::format_no_copy));
+
+	// Read attributes of tab file
+	title = readStringByteSizeOfInteger();
+	subtitle = readStringByteSizeOfInteger();
+	artist = readStringByteSizeOfInteger();
+	album = readStringByteSizeOfInteger();
+	lyricsAuthor = readStringByteSizeOfInteger();
+	musicAuthor = readStringByteSizeOfInteger();
+	copyright = readStringByteSizeOfInteger();
+	tab = readStringByteSizeOfInteger();
+	instructions = readStringByteSizeOfInteger();
+	auto commentLen = readInt();
+	for (auto i = 0; i < commentLen; ++i)
+		comments.push_back(readStringByteSizeOfInteger());
+
+	// Read lyrics data
+	lyricTrack = readInt();
+	lyric = readLyrics();
+
+	// Read page setup
+	readPageSetup();
+
+	// Read tempo value
+	tempoValue = readInt();
+
+	if (versionIndex > 0)
+		skip(1);
+
+	// Read key signature
+	auto keySignature = readKeySignature();
+	
+	skip(3);
+
+	// Octave
+	readByte();
+
+	// Read channels
+	channels = readChannels();
+
+	skip(42);
+
+	// Read measures and track count info
+	measures = readInt();
+	trackCount = readInt();
+
+
 }
 
 /* This reads an unsigned byte from the file buffer and increments the
@@ -98,6 +158,19 @@ std::string Parser::readStringByte(size_t size)
 	return readString(size, readUnsignedByte());
 }
 
+/* This returns a string from the file buffer, but using an integer before it
+ * to tell it the total number of bytes to read - the initial byte that is
+ * read still gives the string length */
+std::string Parser::readStringByteSizeOfInteger()
+{
+	return readStringByte(readInt() - 1);
+}
+
+std::string Parser::readStringInteger()
+{
+	return readString(readInt());
+}
+
 /* This just moves the position past 'n' number of bytes in the file buffer */
 void Parser::skip(std::size_t n)
 {
@@ -114,13 +187,74 @@ void Parser::readVersion()
 bool Parser::isSupportedVersion(std::string& version)
 {
 	auto versionsCount = sizeof(VERSIONS) / sizeof(const char *);
-	for (size_t i; i < versionsCount; ++i) {
+	for (auto i = 0; i < versionsCount; ++i) {
 		if (version.compare(VERSIONS[i]) == 0) {
 			versionIndex = i;
 			return true;
 		}
 	}
 	return false;
+}
+
+/* This reads lyrics data */
+Lyric Parser::readLyrics()
+{
+	Lyric lyric;
+	lyric.from = readInt();
+	lyric.lyric = readStringInteger();
+
+	for (auto i = 0; i < 4; ++i) {
+		readInt();
+		readStringInteger();
+	}
+
+	return lyric;
+}
+
+/* This reads the page setup data */
+void Parser::readPageSetup()
+{
+	skip(versionIndex > 0 ? 49 : 30);
+	for (auto i = 0; i < 11; ++i) {
+		skip(4);
+		readStringByte(0);
+	}
+}
+
+/* This reads the key signature */
+std::int8_t Parser::readKeySignature()
+{
+	auto keySignature = readByte();
+	if (keySignature < 0)
+		keySignature = 7 - keySignature;
+
+	return keySignature;
+}
+
+/* This reads the channel attributes data */
+std::vector<Channel> Parser::readChannels()
+{
+	std::vector<Channel> channels;
+	for (auto i = 0; i < 64; ++i) {
+		Channel channel;
+		channel.program = readInt();
+		channel.volume = readByte();
+		channel.balance = readByte();
+		channel.chorus = readByte();
+		channel.reverb = readByte();
+		channel.phaser = readByte();
+		channel.tremolo = readByte();
+		channel.bank =
+			i == 9 ?
+			"default percussion bank" :
+			"default bank";
+		if (channel.program < 0)
+			channel.program = 0;
+		channels.push_back(channel);
+		skip(2);
+	}
+
+	return channels;
 }
 
 }
