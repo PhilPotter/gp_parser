@@ -5,6 +5,7 @@
 #include <iterator>
 #include <regex>
 #include "gp_parser.h"
+#include <iostream>
 
 namespace gp_parser {
 
@@ -89,7 +90,54 @@ Parser::Parser(const char *filePath)
 	measures = readInt();
 	trackCount = readInt();
 
+	// Read measure headers
+	TimeSignature timeSignature;
+	timeSignature.numerator = 4;
+	timeSignature.denominator.value = QUARTER;
+	timeSignature.denominator.division.enters = 1;
+	timeSignature.denominator.division.times = 1;
+	for (auto i = 0; i < measures; ++i) {
+		if (i > 0)
+			skip(1);
+		std::uint8_t flags = readUnsignedByte();
+		MeasureHeader header;
+		header.number = i + 1;
+		header.start = 0;
+		header.tempo = 120;
+		header.repeatOpen = (flags & 0x04) != 0;
+		if ((flags & 0x01) != 0)
+			timeSignature.numerator = readByte();
+		if ((flags & 0x02) != 0)
+			timeSignature.denominator.value = readByte();
+		header.timeSignature = timeSignature;
+		if ((flags & 0x08) != 0)
+			header.repeatClose = (readByte() & 0xFF) - 1;
+		if ((flags & 0x20) != 0) {
+			header.marker.measure = header.number;
+			header.marker.title = readStringByteSizeOfInteger();
+			header.marker.color = readColor();
+		}
+		if ((flags & 0x10) != 0)
+			header.repeatAlternative = readUnsignedByte();
+		if ((flags & 0x40) != 0) {
+			keySignature = readKeySignature();
+			skip(1);
+		}
+		if ((flags & 0x01) != 0 || (flags & 0x02) != 0)
+			skip(4);
+		if ((flags & 0x10) == 0)
+			skip(1);
+		std::int8_t tripletFeel = readByte();
+		if (tripletFeel == 1)
+			header.tripletFeel = "eigth";
+		else if (tripletFeel == 2)
+			header.tripletFeel = "sixteents";
+		else
+			header.tripletFeel = "none";
 
+		// Push header to vector
+		measureHeaders.push_back(header);
+	}
 }
 
 /* This reads an unsigned byte from the file buffer and increments the
@@ -255,6 +303,18 @@ std::vector<Channel> Parser::readChannels()
 	}
 
 	return channels;
+}
+
+// Read a color value
+Color Parser::readColor()
+{
+	Color c;
+	c.r = readUnsignedByte();
+	c.g = readUnsignedByte();
+	c.b = readUnsignedByte();
+	skip(1);
+
+	return c;
 }
 
 }

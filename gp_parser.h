@@ -24,6 +24,7 @@ struct Lyric {
 	std::string lyric;
 };
 
+// Define channel struct
 struct Channel {
 	std::int32_t program;
 	std::int8_t volume;
@@ -33,6 +34,51 @@ struct Channel {
 	std::int8_t phaser;
 	std::int8_t tremolo;
 	std::string bank;
+};
+
+// Define division struct
+struct Division {
+	std::int32_t enters;
+	std::int32_t times;
+};
+
+// Define denominator struct
+struct Denominator {
+	std::int8_t value;
+	Division division;
+};
+
+// Define time signature struct
+struct TimeSignature {
+	std::int8_t numerator;
+	Denominator denominator;
+};
+
+// Define color struct
+struct Color {
+	std::uint8_t r;
+	std::uint8_t g;
+	std::uint8_t b;
+};
+
+// Define measure marker struct
+struct Marker {
+	std::int32_t measure;
+	std::string title;
+	Color color;	
+};
+
+// Define measure header struct
+struct MeasureHeader {
+	std::int32_t number;
+	std::int32_t start;
+	std::int32_t tempo;
+	bool repeatOpen;
+	TimeSignature timeSignature;
+	std::int8_t repeatClose;
+	Marker marker;
+	std::uint8_t repeatAlternative;
+	std::string tripletFeel;
 };
 
 class Parser {
@@ -62,6 +108,7 @@ private:
 	std::vector<Channel> channels;
 	std::int32_t measures;
 	std::int32_t trackCount;
+	std::vector<MeasureHeader> measureHeaders;
 
 	// Private member functions for reading low-level file data
 	std::uint8_t readUnsignedByte();
@@ -81,6 +128,7 @@ private:
 	void readPageSetup();
 	std::int8_t readKeySignature();
 	std::vector<Channel> readChannels();
+	Color readColor();
 };
 
 }
