@@ -187,7 +187,7 @@ Parser::Parser(const char *filePath)
 			measure.header = &header;
 			measure.start = start;
 			track.measures.push_back(measure);
-			readMeasure(measure, track, tempo, keySignature);
+			readMeasure(track.measures[track.measures.size() - 1], track, tempo, keySignature);
 			skip(1);
 		}
 		header.tempo = tempo;
@@ -339,7 +339,7 @@ std::vector<Channel> Parser::readChannels()
 {
 	std::vector<Channel> channels;
 	for (auto i = 0; i < 64; ++i) {
-		Channel channel;
+		auto channel = Channel();
 		channel.program = readInt();
 		channel.volume = readByte();
 		channel.balance = readByte();
@@ -347,10 +347,12 @@ std::vector<Channel> Parser::readChannels()
 		channel.reverb = readByte();
 		channel.phaser = readByte();
 		channel.tremolo = readByte();
-		channel.bank =
-			i == 9 ?
-			"default percussion bank" :
-			"default bank";
+		if (i == 9) {
+			channel.bank = "default percussion bank";
+			channel.isPercussionChannel = true;
+		} else {
+			channel.bank = "default bank";
+		}
 		if (channel.program < 0)
 			channel.program = 0;
 		channels.push_back(channel);
@@ -445,7 +447,8 @@ void Parser::readMeasure(Measure& measure, Track& track, Tempo& tempo, std::int8
 /* Get measure length */
 std::int32_t Parser::getLength(MeasureHeader& header)
 {
-	return 1;
+	return static_cast<std::int32_t>(std::round(header.timeSignature.numerator *
+		getTime(denominatorToDuration(header.timeSignature.denominator))));
 }
 
 /* Adds a new measure to the beat */
@@ -457,6 +460,7 @@ Beat& Parser::getBeat(Measure& measure, std::int32_t start)
 	}
 
 	Beat beat;
+	beat.voices.resize(2);
 	beat.start = start;
 	measure.beats.push_back(beat);
 
@@ -585,7 +589,7 @@ void Parser::readChord(std::vector<GuitarString>& strings, Beat& beat)
 }
 
 /* Get duration */
-double Parser::getTime(Duration& duration)
+double Parser::getTime(Duration duration)
 {
 	auto time = QUARTER_TIME * 4.0 / duration.value;
 	if (duration.dotted)
@@ -599,7 +603,7 @@ double Parser::getTime(Duration& duration)
 /* Read duration */
 double Parser::readDuration(std::uint8_t flags)
 {
-	Duration duration;
+	auto duration = Duration();
 	duration.value = pow(2, (readByte() + 4)) / 4;
 	duration.dotted = (flags & 0x01) != 0;
 	if ((flags & 0x20) != 0) {
@@ -738,7 +742,7 @@ std::int8_t Parser::getTiedNoteValue(std::int32_t string, Track& track)
 	if (measureCount > 0) {
 		for (auto m = measureCount - 1; m >= 0; --m) {
 			auto& measure = track.measures[m];
-			for (auto b = measure.beats.size() - 1; b >= 0; --b) {
+			for (auto b = static_cast<std::int64_t>(measure.beats.size()) - 1; b >= 0; --b) {
 				auto& beat = measure.beats[b];
 				for (auto v = 0; v < beat.voices.size(); ++v) {
 					auto& voice = beat.voices[v];
@@ -894,6 +898,31 @@ void Parser::readTrill(NoteEffect& effect)
 	}
 }
 
+/* Tests if the channel corresponding to the supplied id is a
+ * drum channel */
+bool Parser::isPercussionChannel(std::int32_t channelId)
+{
+	for (auto& channel : channels) {
+		if (channel.id == channelId)
+			return channel.isPercussionChannel;
+	}
+
+	return false;
+}
+
+/* Get clef */
+std::string Parser::getClef(Track& track)
+{
+	if (!isPercussionChannel(track.channelId)) {
+		for (auto& string : track.strings) {
+			if (string.value <= 34)
+				return "CLEF_BASS";
+		}
+	}	
+
+	return "CLEF_TREBLE";
+}
+
 /* Tells us how many digits there are in a base 10 number */
 std::int32_t numOfDigits(std::int32_t num)
 {
@@ -902,6 +931,16 @@ std::int32_t numOfDigits(std::int32_t num)
 		++digits;
 
 	return digits;
+}
+
+/* Convetrs a denominator struct to a duration struct */
+Duration denominatorToDuration(Denominator& denominator)
+{
+	auto duration = Duration();
+	duration.value = denominator.value;
+	duration.division = denominator.division;
+
+	return duration;
 }
 
 }

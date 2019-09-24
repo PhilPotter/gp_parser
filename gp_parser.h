@@ -48,6 +48,7 @@ struct Channel {
 	std::int8_t phaser;
 	std::int8_t tremolo;
 	std::string bank;
+	bool isPercussionChannel;
 	std::vector<ChannelParam> parameters;
 };
 
@@ -60,6 +61,14 @@ struct Division {
 // Define denominator struct
 struct Denominator {
 	std::int8_t value;
+	Division division;
+};
+
+// Define duration struct
+struct Duration {
+	double value;
+	bool dotted;
+	bool doubleDotted;
 	Division division;
 };
 
@@ -234,6 +243,7 @@ struct Measure {
 	std::int32_t start;
 	std::vector<Beat> beats;
 	std::int8_t keySignature;
+	std::string clef;
 };
 
 // Define track struct
@@ -246,14 +256,6 @@ struct Track {
 	std::int32_t offset;
 	Color color;
 	std::vector<Measure> measures;
-};
-
-// Define duration struct
-struct Duration {
-	double value;
-	bool dotted;
-	bool doubleDotted;
-	Division division;
 };
 
 class Parser {
@@ -314,7 +316,7 @@ private:
 	void readTremoloBar(NoteEffect& effect);
 	void readText(Beat& beat);
 	void readChord(std::vector<GuitarString>& strings, Beat& beat);
-	double getTime(Duration& duration);
+	double getTime(Duration duration);
 	double readDuration(std::uint8_t flags);
 	double readBeat(std::int32_t start, Measure& measure, Track& track, Tempo& tempo, std::size_t voiceIndex);
 	Note readNote(GuitarString& string, Track& track, NoteEffect& effect);
@@ -325,9 +327,12 @@ private:
 	void readTremoloPicking(NoteEffect& effect);
 	void readArtificialHarmonic(NoteEffect& effect);
 	void readTrill(NoteEffect& effect);
+	bool isPercussionChannel(std::int32_t channelId);
+	std::string getClef(Track& track);
 };
 
 std::int32_t numOfDigits(std::int32_t num);
+Duration denominatorToDuration(Denominator& denominator);
 
 }
 
