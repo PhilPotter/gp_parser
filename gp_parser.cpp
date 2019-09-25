@@ -76,7 +76,7 @@ Parser::Parser(const char *filePath)
 		skip(1);
 
 	// Read key signature
-	auto keySignature = readKeySignature();
+	globalKeySignature = readKeySignature();
 	
 	skip(3);
 
@@ -122,7 +122,7 @@ Parser::Parser(const char *filePath)
 		if ((flags & 0x10) != 0)
 			header.repeatAlternative = readUnsignedByte();
 		if ((flags & 0x40) != 0) {
-			keySignature = readKeySignature();
+			globalKeySignature = readKeySignature();
 			skip(1);
 		}
 		if ((flags & 0x01) != 0 || (flags & 0x02) != 0)
@@ -187,7 +187,7 @@ Parser::Parser(const char *filePath)
 			measure.header = &header;
 			measure.start = start;
 			track.measures.push_back(measure);
-			readMeasure(track.measures[track.measures.size() - 1], track, tempo, keySignature);
+			readMeasure(track.measures[track.measures.size() - 1], track, tempo, globalKeySignature);
 			skip(1);
 		}
 		header.tempo = tempo;

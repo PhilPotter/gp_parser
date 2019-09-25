@@ -7,6 +7,7 @@
 #include <cstdint>
 #include <vector>
 #include <string>
+#include <sstream>
 
 namespace gp_parser {
 
@@ -24,16 +25,23 @@ static const int GP_BEND_POSITION = 60;
 static const int TGVELOCITIES_MIN_VELOCITY = 15;
 static const int TGVELOCITIES_VELOCITY_INCREMENT = 16;
 
+// Spacing for XML output
+#define XML_SPACING "   "
+
 // Define struct to hold lyrics data
 struct Lyric {
 	std::int32_t from;
 	std::string lyric;
+
+	void addToXML(std::ostringstream& outputStream, std::int32_t indentLevel);
 };
 
 // Define channel parameter struct
 struct ChannelParam {
 	std::string key;
 	std::string value;
+
+	void addToXML(std::ostringstream& outputStream, std::int32_t identLevel);
 };
 
 // Define channel struct
@@ -50,6 +58,8 @@ struct Channel {
 	std::string bank;
 	bool isPercussionChannel;
 	std::vector<ChannelParam> parameters;
+
+	void addToXML(std::ostringstream& outputStream, std::int32_t indentLevel);
 };
 
 // Define division struct
@@ -261,6 +271,7 @@ struct Track {
 class Parser {
 public:
 	Parser(const char *filePath);
+	std::string getXML();
 private:
 	// Private member properties
 	std::vector<char> fileBuffer;
@@ -282,6 +293,7 @@ private:
 	std::int32_t lyricTrack;
 	Lyric lyric;
 	std::int32_t tempoValue;
+	std::int8_t globalKeySignature;
 	std::vector<Channel> channels;
 	std::int32_t measures;
 	std::int32_t trackCount;
@@ -333,6 +345,7 @@ private:
 
 std::int32_t numOfDigits(std::int32_t num);
 Duration denominatorToDuration(Denominator& denominator);
+void addSpacingToXML(std::ostringstream& outputStream, std::int32_t indentLevel);
 
 }
 
