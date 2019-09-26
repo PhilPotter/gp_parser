@@ -26,7 +26,7 @@ static const int TGVELOCITIES_MIN_VELOCITY = 15;
 static const int TGVELOCITIES_VELOCITY_INCREMENT = 16;
 
 // Spacing for XML output
-#define XML_SPACING "   "
+#define XML_SPACING "    "
 
 // Define struct to hold lyrics data
 struct Lyric {
@@ -66,12 +66,16 @@ struct Channel {
 struct Division {
 	std::int32_t enters;
 	std::int32_t times;
+
+	void addToXML(std::ostringstream& outputStream, std::int32_t indentLevel);
 };
 
 // Define denominator struct
 struct Denominator {
 	std::int8_t value;
 	Division division;
+
+	void addToXML(std::ostringstream& outputStream, std::int32_t indentLevel);
 };
 
 // Define duration struct
@@ -86,6 +90,8 @@ struct Duration {
 struct TimeSignature {
 	std::int8_t numerator;
 	Denominator denominator;
+
+	void addToXML(std::ostringstream& outputStream, std::int32_t indentLevel);
 };
 
 // Define color struct
@@ -93,53 +99,69 @@ struct Color {
 	std::uint8_t r;
 	std::uint8_t g;
 	std::uint8_t b;
+
+	void addToXML(std::ostringstream& outputStream, std::int32_t indentLevel);
 };
 
 // Define measure marker struct
 struct Marker {
 	std::int32_t measure;
 	std::string title;
-	Color color;	
+	Color color;
+
+	void addToXML(std::ostringstream& outputStream, std::int32_t indentLevel);
 };
 
 // Define tempo struct
 struct Tempo {
 	std::int32_t value;
+
+	void addToXML(std::ostringstream& outputStream, std::int32_t indentLevel);
 };
 
 // Define measure header struct
 struct MeasureHeader {
 	std::int32_t number;
 	std::int32_t start;
-	Tempo tempo;
 	bool repeatOpen;
-	TimeSignature timeSignature;
-	std::int8_t repeatClose;
-	Marker marker;
+	std::int8_t repeatClose;	
 	std::uint8_t repeatAlternative;
 	std::string tripletFeel;
+	Tempo tempo;
+	TimeSignature timeSignature;
+	Marker marker;
+
+	void addToXML(std::ostringstream& outputStream, std::int32_t indentLevel);
 };
 
 // Define tremolo point struct
 struct TremoloPoint {
 	std::int32_t pointPosition;
 	std::int32_t pointValue;
+
+	void addToXML(std::ostringstream& outputStream, std::int32_t indentLevel);
 };
 
 // Define tremolo bar struct
 struct TremoloBar {
 	std::vector<TremoloPoint> points;
+
+	void addToXML(std::ostringstream& outputStream, std::int32_t indentLevel);
 };
 
 // Define bend point struct
 struct BendPoint {
 	std::int32_t pointPosition;
 	std::int32_t pointValue;
+
+	void addToXML(std::ostringstream& outputStream, std::int32_t indentLevel);
 };
 
 // Define bend struct
 struct Bend {
 	std::vector<BendPoint> points;
+
+	void addToXML(std::ostringstream& outputStream, std::int32_t indentLevel);
 };
 
 // Define grace struct
@@ -150,28 +172,38 @@ struct Grace {
 	std::uint8_t duration;
 	bool dead;
 	bool onBeat;
+
+	void addToXML(std::ostringstream& outputStream, std::int32_t indentLevel);
 };
 
 // Define effect duration struct
 struct EffectDuration {
 	std::string value;
+
+	void addToXML(std::ostringstream& outputStream, std::int32_t indentLevel);
 };
 
 // Define tremolo picking struct
 struct TremoloPicking {
 	EffectDuration duration;
+
+	void addToXML(std::ostringstream& outputStream, std::int32_t indentLevel);
 };
 
 // Define harmonic struct
 struct Harmonic {
-	std::int32_t data;
 	std::string type;
+	std::int32_t data;
+
+	void addToXML(std::ostringstream& outputStream, std::int32_t indentLevel);
 };
 
 // Define trill struct
 struct Trill {
 	std::int8_t fret;
 	EffectDuration duration;
+
+	void addToXML(std::ostringstream& outputStream, std::int32_t indentLevel);
 };
 
 // Define note effect struct
@@ -196,34 +228,44 @@ struct NoteEffect {
 	Grace grace;
 	Harmonic harmonic;
 	Trill trill;
+
+	void addToXML(std::ostringstream& outputStream, std::int32_t indentLevel);
 };
 
 // Define note struct
 struct Note {
 	std::int32_t string;
-	NoteEffect effect;
 	bool tiedNote;
 	std::int8_t value;
 	std::int32_t velocity;
+	NoteEffect effect;
+
+	void addToXML(std::ostringstream& outputStream, std::int32_t indentLevel);
 };
 
 // Define voice struct
 struct Voice {
-	std::vector<Note> notes;
-	double duration;
 	bool empty;
+	double duration;	
+	std::vector<Note> notes;
+
+	void addToXML(std::ostringstream& outputStream, std::int32_t indentLevel);
 };
 
 // Define stroke struct
 struct Stroke {
 	std::string direction;
 	std::string value;
+
+	void addToXML(std::ostringstream& outputStream, std::int32_t indentLevel);
 };
 
 // Define guitar string struct
 struct GuitarString {
 	std::int32_t number;
 	std::int32_t value;
+
+	void addToXML(std::ostringstream& outputStream, std::int32_t indentLevel);
 };
 
 // Define chord struct
@@ -231,47 +273,99 @@ struct Chord {
 	std::string name;
 	std::vector<GuitarString>* strings;
 	std::vector<std::int32_t> frets;
+
+	void addToXML(std::ostringstream& outputStream, std::int32_t indentLevel);
 };
 
 // Define beat text struct
 struct BeatText {
 	std::string value;
+
+	void addToXML(std::ostringstream& outputStream, std::int32_t indentLevel);
 };
 
 // Define beat struct
 struct Beat {
 	std::int32_t start;
-	std::vector<Voice> voices;
-	Stroke stroke;
 	BeatText text;
+	Stroke stroke;
 	Chord chord;
+	std::vector<Voice> voices;
+
+	void addToXML(std::ostringstream& outputStream, std::int32_t indentLevel);
 };
 
 // Define measure struct
 struct Measure {
 	MeasureHeader *header;
 	std::int32_t start;
-	std::vector<Beat> beats;
 	std::int8_t keySignature;
 	std::string clef;
+	std::vector<Beat> beats;
+
+	void addToXML(std::ostringstream& outputStream, std::int32_t indentLevel);
 };
 
 // Define track struct
 struct Track {
 	std::int32_t channelId;
 	std::int32_t number;
-	Lyric lyrics;
 	std::string name;
-	std::vector<GuitarString> strings;
 	std::int32_t offset;
+	Lyric lyrics;
 	Color color;
+	std::vector<GuitarString> strings;
 	std::vector<Measure> measures;
+
+	void addToXML(std::ostringstream& outputStream, std::int32_t indentLevel);
+};
+
+// Define struct to return overall tab - it only contains references to real values
+// inside Parser object, so that they can be modified.
+struct TabFile {
+	// State of tab file
+	std::int32_t& major;
+	std::int32_t& minor;
+	std::string& title;
+	std::string& subtitle;
+	std::string& artist;
+	std::string& album;
+	std::string& lyricsAuthor;
+	std::string& musicAuthor;
+	std::string& copyright;
+	std::string& tab;
+	std::string& instructions;
+	std::vector<std::string>& comments;
+	Lyric& lyric;
+	std::int32_t& tempoValue;
+	std::int8_t& globalKeySignature;
+	std::vector<Channel>& channels;
+	std::int32_t& measures;
+	std::int32_t& trackCount;
+	std::vector<MeasureHeader>& measureHeaders;
+	std::vector<Track>& tracks;
+
+	// Constructor to set references
+	TabFile(std::int32_t& major, std::int32_t& minor, std::string& title,
+		std::string& subtitle, std::string& artist, std::string& album,
+		std::string& lyricsAuthor, std::string& musicAuthor, std::string& copyright,
+		std::string& tab, std::string& instructions, std::vector<std::string>& comments,
+		Lyric& lyric, std::int32_t& tempoValue, std::int8_t& globalKeySignature,
+		std::vector<Channel>& channels, std::int32_t& measures, std::int32_t& trackCount,
+		std::vector<MeasureHeader>& measureHeaders, std::vector<Track>& tracks)
+		: major(major), minor(minor), title(title), subtitle(subtitle),
+		  artist(artist), album(album), lyricsAuthor(lyricsAuthor), musicAuthor(musicAuthor),
+		  copyright(copyright), tab(tab), instructions(instructions), comments(comments),
+		  lyric(lyric), tempoValue(tempoValue), globalKeySignature(globalKeySignature),
+		  channels(channels), measures(measures), trackCount(trackCount),
+		  measureHeaders(measureHeaders), tracks(tracks) {}
 };
 
 class Parser {
 public:
 	Parser(const char *filePath);
 	std::string getXML();
+	TabFile getTabFile();
 private:
 	// Private member properties
 	std::vector<char> fileBuffer;

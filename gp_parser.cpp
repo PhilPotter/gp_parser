@@ -93,7 +93,7 @@ Parser::Parser(const char *filePath)
 	trackCount = readInt();
 
 	// Read measure headers
-	TimeSignature timeSignature;
+	auto timeSignature = TimeSignature();
 	timeSignature.numerator = 4;
 	timeSignature.denominator.value = QUARTER;
 	timeSignature.denominator.division.enters = 1;
@@ -102,7 +102,7 @@ Parser::Parser(const char *filePath)
 		if (i > 0)
 			skip(1);
 		std::uint8_t flags = readUnsignedByte();
-		MeasureHeader header;
+		auto header = MeasureHeader();
 		header.number = i + 1;
 		header.start = 0;
 		header.tempo.value = 120;
@@ -143,7 +143,7 @@ Parser::Parser(const char *filePath)
 
 	// Read tracks
 	for (auto number = 1; number <= trackCount; ++number) {
-		Track track;
+		auto track = Track();
 		readUnsignedByte();
 		if (number == 1 || versionIndex == 0)
 			skip(1);
@@ -154,7 +154,7 @@ Parser::Parser(const char *filePath)
 		for (auto i = 0; i < 7; ++i) {
 			auto tuning = readInt();
 			if (stringCount > i) {
-				GuitarString string;
+				auto string = GuitarString();
 				string.number = i + 1;
 				string.value = tuning;
 				track.strings.push_back(string);
@@ -175,7 +175,7 @@ Parser::Parser(const char *filePath)
 	skip(versionIndex == 0 ? 2 : 1);
 
 	// Iterate through measures
-	Tempo tempo;
+	auto tempo = Tempo();
 	tempo.value = tempoValue;
 	auto start = QUARTER_TIME;
 	for (auto i = 0; i < measures; ++i) {
@@ -183,7 +183,7 @@ Parser::Parser(const char *filePath)
 		header.start = start;
 		for (auto j = 0; j < trackCount; ++j) {
 			Track& track = tracks[j];
-			Measure measure;
+			auto measure = Measure();
 			measure.header = &header;
 			measure.start = start;
 			track.measures.push_back(measure);
@@ -302,7 +302,7 @@ bool Parser::isSupportedVersion(std::string& version)
 /* This reads lyrics data */
 Lyric Parser::readLyrics()
 {
-	Lyric lyric;
+	auto lyric = Lyric();
 	lyric.from = readInt();
 	lyric.lyric = readStringInteger();
 
@@ -365,7 +365,7 @@ std::vector<Channel> Parser::readChannels()
 /* Read a color value */
 Color Parser::readColor()
 {
-	Color c;
+	auto c = Color();
 	c.r = readUnsignedByte();
 	c.g = readUnsignedByte();
 	c.b = readUnsignedByte();
@@ -381,7 +381,8 @@ void Parser::readChannel(Track& track)
 	auto gmChannel2 = readInt() - 1;
 	if (gmChannel1 >= 0 && gmChannel1 < channels.size()) {
 		// Allocate temporary buffer to hold chars for conversion
-		ChannelParam gmChannel1Param, gmChannel2Param;
+		auto gmChannel1Param = ChannelParam();
+		auto gmChannel2Param = ChannelParam();
 		gmChannel1Param.key = "gm channel 1";
 		gmChannel1Param.value.resize(numOfDigits(gmChannel1));
 		std::sprintf(&gmChannel1Param.value[0], "%d", gmChannel1);
@@ -459,7 +460,7 @@ Beat& Parser::getBeat(Measure& measure, std::int32_t start)
 			return beat;
 	}
 
-	Beat beat;
+	auto beat = Beat();
 	beat.voices.resize(2);
 	beat.start = start;
 	measure.beats.push_back(beat);
@@ -542,14 +543,14 @@ void Parser::readBeatEffects(Beat& beat, NoteEffect& noteEffect)
 void Parser::readTremoloBar(NoteEffect& effect)
 {
 	skip(5);
-	TremoloBar tremoloBar;
+	auto tremoloBar = TremoloBar();
 	auto numPoints = readInt();
 	for (auto i = 0; i < numPoints; ++i) {
 		auto position = readInt();
 		auto value = readInt();
 		readByte();
 
-		TremoloPoint point;
+		auto point = TremoloPoint();
 		point.pointPosition = static_cast<std::int32_t>(std::round(
 				position * 1.0 /*'max position length'*/ / 
 				1.0 /*'bend position'*/)); // TODO
@@ -571,7 +572,7 @@ void Parser::readText(Beat& beat)
 /* Read chord */
 void Parser::readChord(std::vector<GuitarString>& strings, Beat& beat)
 {
-	Chord chord;
+	auto chord = Chord();
 	chord.strings = &strings;
 	skip(17);
 	chord.name = readStringByte(21);
@@ -667,7 +668,7 @@ double Parser::readBeat(std::int32_t start, Measure& measure, Track& track, Temp
 		voice.empty = (beatType & 0x02) == 0;
 	}
 	auto duration = readDuration(flags);
-	NoteEffect effect;
+	auto effect = NoteEffect();
 	if ((flags & 0x02) != 0)
 		readChord(track.strings, beat);
 	if ((flags & 0x04) != 0)
@@ -699,7 +700,7 @@ double Parser::readBeat(std::int32_t start, Measure& measure, Track& track, Temp
 Note Parser::readNote(GuitarString& string, Track& track, NoteEffect& effect)
 {
 	auto flags = readUnsignedByte();
-	Note note;
+	auto note = Note();
 	note.string = string.number;
 	note.effect = effect;
 	note.effect.accentuatedNote = (flags & 0x40) != 0;
@@ -791,13 +792,13 @@ void Parser::readNoteEffects(NoteEffect& noteEffect)
 void Parser::readBend(NoteEffect& effect)
 {
 	skip(5);
-	Bend bend;
+	auto bend = Bend();
 	auto numPoints = readInt();
 	for (auto i = 0; i < numPoints; ++i) {
 		auto bendPosition = readInt();
 		auto bendValue = readInt();
 		readByte();
-		BendPoint p;
+		auto p = BendPoint();
 		p.pointPosition = std::round(bendPosition *
 				TGEFFECTBEND_MAX_POSITION_LENGTH /
 				static_cast<double>(GP_BEND_POSITION));
@@ -818,7 +819,7 @@ void Parser::readGrace(NoteEffect& effect)
 	auto transition = readByte();
 	auto duration = readUnsignedByte();
 	auto flags = readUnsignedByte();
-	Grace grace;
+	auto grace = Grace();
 	grace.fret = fret;
 	grace.dynamic = (TGVELOCITIES_MIN_VELOCITY +
 			(TGVELOCITIES_VELOCITY_INCREMENT * dynamic)) -
@@ -841,7 +842,7 @@ void Parser::readGrace(NoteEffect& effect)
 void Parser::readTremoloPicking(NoteEffect& effect)
 {
 	auto value = readUnsignedByte();
-	TremoloPicking tp;
+	auto tp = TremoloPicking();
 	if (value == 1) {
 		tp.duration.value = "eigth";
 		effect.tremoloPicking = tp;
@@ -858,7 +859,7 @@ void Parser::readTremoloPicking(NoteEffect& effect)
 void Parser::readArtificialHarmonic(NoteEffect& effect)
 {
 	auto type = readByte();
-	Harmonic harmonic;
+	auto harmonic = Harmonic();
 	if (type == 1) {
 		harmonic.type = "natural";
 		effect.harmonic = harmonic;
@@ -884,7 +885,7 @@ void Parser::readTrill(NoteEffect& effect)
 {
 	auto fret = readByte();
 	auto period = readByte();
-	Trill trill;
+	auto trill = Trill();
 	trill.fret = fret;
 	if (period == 1) {
 		trill.duration.value = "sixteenth";
@@ -923,6 +924,17 @@ std::string Parser::getClef(Track& track)
 	return "CLEF_TREBLE";
 }
 
+/* This generates the same state as the XML blob, but in object
+ * form that can be manipulated by the caller */
+TabFile Parser::getTabFile()
+{
+	return TabFile(major, minor, title, subtitle, artist, album,
+		       lyricsAuthor, musicAuthor, copyright, tab,
+		       instructions, comments, lyric, tempoValue,
+		       globalKeySignature, channels, measures,
+		       trackCount, measureHeaders, tracks);
+}
+
 /* Tells us how many digits there are in a base 10 number */
 std::int32_t numOfDigits(std::int32_t num)
 {
@@ -933,7 +945,7 @@ std::int32_t numOfDigits(std::int32_t num)
 	return digits;
 }
 
-/* Convetrs a denominator struct to a duration struct */
+/* Converts a denominator struct to a duration struct */
 Duration denominatorToDuration(Denominator& denominator)
 {
 	auto duration = Duration();
