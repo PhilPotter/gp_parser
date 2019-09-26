@@ -7,7 +7,7 @@ This is based upon the parse-gp5 Javascript codebase written by Julian Gruber. I
 ## Usage
 
 ```cpp
-// Instatiate parser
+// Instantiate parser
 gp_parser::Parser parser("/home/johnsmith/path_to_tab.gp5");
 
 // Parser XML format is returned via std::string
