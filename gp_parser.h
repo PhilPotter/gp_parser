@@ -33,7 +33,7 @@ struct Lyric {
 	std::int32_t from;
 	std::string lyric;
 
-	void addToXML(std::ostringstream& outputStream, std::int32_t indentLevel);
+	void addToXML(std::ostringstream& outputStream, std::int32_t indentLevel) const;
 };
 
 // Define channel parameter struct
@@ -41,7 +41,7 @@ struct ChannelParam {
 	std::string key;
 	std::string value;
 
-	void addToXML(std::ostringstream& outputStream, std::int32_t identLevel);
+	void addToXML(std::ostringstream& outputStream, std::int32_t identLevel) const;
 };
 
 // Define channel struct
@@ -59,7 +59,7 @@ struct Channel {
 	bool isPercussionChannel;
 	std::vector<ChannelParam> parameters;
 
-	void addToXML(std::ostringstream& outputStream, std::int32_t indentLevel);
+	void addToXML(std::ostringstream& outputStream, std::int32_t indentLevel) const;
 };
 
 // Define division struct
@@ -67,7 +67,7 @@ struct Division {
 	std::int32_t enters;
 	std::int32_t times;
 
-	void addToXML(std::ostringstream& outputStream, std::int32_t indentLevel);
+	void addToXML(std::ostringstream& outputStream, std::int32_t indentLevel) const;
 };
 
 // Define denominator struct
@@ -75,7 +75,7 @@ struct Denominator {
 	std::int8_t value;
 	Division division;
 
-	void addToXML(std::ostringstream& outputStream, std::int32_t indentLevel);
+	void addToXML(std::ostringstream& outputStream, std::int32_t indentLevel) const;
 };
 
 // Define duration struct
@@ -91,7 +91,7 @@ struct TimeSignature {
 	std::int8_t numerator;
 	Denominator denominator;
 
-	void addToXML(std::ostringstream& outputStream, std::int32_t indentLevel);
+	void addToXML(std::ostringstream& outputStream, std::int32_t indentLevel) const;
 };
 
 // Define color struct
@@ -100,7 +100,7 @@ struct Color {
 	std::uint8_t g;
 	std::uint8_t b;
 
-	void addToXML(std::ostringstream& outputStream, std::int32_t indentLevel);
+	void addToXML(std::ostringstream& outputStream, std::int32_t indentLevel) const;
 };
 
 // Define measure marker struct
@@ -109,14 +109,14 @@ struct Marker {
 	std::string title;
 	Color color;
 
-	void addToXML(std::ostringstream& outputStream, std::int32_t indentLevel);
+	void addToXML(std::ostringstream& outputStream, std::int32_t indentLevel) const;
 };
 
 // Define tempo struct
 struct Tempo {
 	std::int32_t value;
 
-	void addToXML(std::ostringstream& outputStream, std::int32_t indentLevel);
+	void addToXML(std::ostringstream& outputStream, std::int32_t indentLevel) const;
 };
 
 // Define measure header struct
@@ -131,7 +131,7 @@ struct MeasureHeader {
 	TimeSignature timeSignature;
 	Marker marker;
 
-	void addToXML(std::ostringstream& outputStream, std::int32_t indentLevel);
+	void addToXML(std::ostringstream& outputStream, std::int32_t indentLevel) const;
 };
 
 // Define tremolo point struct
@@ -139,14 +139,14 @@ struct TremoloPoint {
 	std::int32_t pointPosition;
 	std::int32_t pointValue;
 
-	void addToXML(std::ostringstream& outputStream, std::int32_t indentLevel);
+	void addToXML(std::ostringstream& outputStream, std::int32_t indentLevel) const;
 };
 
 // Define tremolo bar struct
 struct TremoloBar {
 	std::vector<TremoloPoint> points;
 
-	void addToXML(std::ostringstream& outputStream, std::int32_t indentLevel);
+	void addToXML(std::ostringstream& outputStream, std::int32_t indentLevel) const;
 };
 
 // Define bend point struct
@@ -154,14 +154,14 @@ struct BendPoint {
 	std::int32_t pointPosition;
 	std::int32_t pointValue;
 
-	void addToXML(std::ostringstream& outputStream, std::int32_t indentLevel);
+	void addToXML(std::ostringstream& outputStream, std::int32_t indentLevel) const;
 };
 
 // Define bend struct
 struct Bend {
 	std::vector<BendPoint> points;
 
-	void addToXML(std::ostringstream& outputStream, std::int32_t indentLevel);
+	void addToXML(std::ostringstream& outputStream, std::int32_t indentLevel) const;
 };
 
 // Define grace struct
@@ -173,21 +173,21 @@ struct Grace {
 	bool dead;
 	bool onBeat;
 
-	void addToXML(std::ostringstream& outputStream, std::int32_t indentLevel);
+	void addToXML(std::ostringstream& outputStream, std::int32_t indentLevel) const;
 };
 
 // Define effect duration struct
 struct EffectDuration {
 	std::string value;
 
-	void addToXML(std::ostringstream& outputStream, std::int32_t indentLevel);
+	void addToXML(std::ostringstream& outputStream, std::int32_t indentLevel) const;
 };
 
 // Define tremolo picking struct
 struct TremoloPicking {
 	EffectDuration duration;
 
-	void addToXML(std::ostringstream& outputStream, std::int32_t indentLevel);
+	void addToXML(std::ostringstream& outputStream, std::int32_t indentLevel) const;
 };
 
 // Define harmonic struct
@@ -195,7 +195,7 @@ struct Harmonic {
 	std::string type;
 	std::int32_t data;
 
-	void addToXML(std::ostringstream& outputStream, std::int32_t indentLevel);
+	void addToXML(std::ostringstream& outputStream, std::int32_t indentLevel) const;
 };
 
 // Define trill struct
@@ -203,7 +203,7 @@ struct Trill {
 	std::int8_t fret;
 	EffectDuration duration;
 
-	void addToXML(std::ostringstream& outputStream, std::int32_t indentLevel);
+	void addToXML(std::ostringstream& outputStream, std::int32_t indentLevel) const;
 };
 
 // Define note effect struct
@@ -229,7 +229,7 @@ struct NoteEffect {
 	Harmonic harmonic;
 	Trill trill;
 
-	void addToXML(std::ostringstream& outputStream, std::int32_t indentLevel);
+	void addToXML(std::ostringstream& outputStream, std::int32_t indentLevel) const;
 };
 
 // Define note struct
@@ -240,7 +240,7 @@ struct Note {
 	std::int32_t velocity;
 	NoteEffect effect;
 
-	void addToXML(std::ostringstream& outputStream, std::int32_t indentLevel);
+	void addToXML(std::ostringstream& outputStream, std::int32_t indentLevel) const;
 };
 
 // Define voice struct
@@ -249,7 +249,7 @@ struct Voice {
 	double duration;	
 	std::vector<Note> notes;
 
-	void addToXML(std::ostringstream& outputStream, std::int32_t indentLevel);
+	void addToXML(std::ostringstream& outputStream, std::int32_t indentLevel) const;
 };
 
 // Define stroke struct
@@ -257,7 +257,7 @@ struct Stroke {
 	std::string direction;
 	std::string value;
 
-	void addToXML(std::ostringstream& outputStream, std::int32_t indentLevel);
+	void addToXML(std::ostringstream& outputStream, std::int32_t indentLevel) const;
 };
 
 // Define guitar string struct
@@ -265,7 +265,7 @@ struct GuitarString {
 	std::int32_t number;
 	std::int32_t value;
 
-	void addToXML(std::ostringstream& outputStream, std::int32_t indentLevel);
+	void addToXML(std::ostringstream& outputStream, std::int32_t indentLevel) const;
 };
 
 // Define chord struct
@@ -274,14 +274,14 @@ struct Chord {
 	std::vector<GuitarString>* strings;
 	std::vector<std::int32_t> frets;
 
-	void addToXML(std::ostringstream& outputStream, std::int32_t indentLevel);
+	void addToXML(std::ostringstream& outputStream, std::int32_t indentLevel) const;
 };
 
 // Define beat text struct
 struct BeatText {
 	std::string value;
 
-	void addToXML(std::ostringstream& outputStream, std::int32_t indentLevel);
+	void addToXML(std::ostringstream& outputStream, std::int32_t indentLevel) const;
 };
 
 // Define beat struct
@@ -292,7 +292,7 @@ struct Beat {
 	Chord chord;
 	std::vector<Voice> voices;
 
-	void addToXML(std::ostringstream& outputStream, std::int32_t indentLevel);
+	void addToXML(std::ostringstream& outputStream, std::int32_t indentLevel) const;
 };
 
 // Define measure struct
@@ -303,7 +303,7 @@ struct Measure {
 	std::string clef;
 	std::vector<Beat> beats;
 
-	void addToXML(std::ostringstream& outputStream, std::int32_t indentLevel);
+	void addToXML(std::ostringstream& outputStream, std::int32_t indentLevel) const;
 };
 
 // Define track struct
@@ -317,7 +317,7 @@ struct Track {
 	std::vector<GuitarString> strings;
 	std::vector<Measure> measures;
 
-	void addToXML(std::ostringstream& outputStream, std::int32_t indentLevel);
+	void addToXML(std::ostringstream& outputStream, std::int32_t indentLevel) const;
 };
 
 // Define struct to return overall tab - it only contains references to real values
@@ -364,7 +364,7 @@ struct TabFile {
 class Parser {
 public:
 	Parser(const char *filePath);
-	std::string getXML();
+	std::string getXML() const;
 	TabFile getTabFile();
 private:
 	// Private member properties
