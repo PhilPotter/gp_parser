@@ -300,7 +300,7 @@ void Track::addToXML(std::ostringstream& outputStream, std::int32_t indentLevel)
 	if (measures.size() > 0) {
 		addSpacingToXML(outputStream, indentLevel + 1);
 		outputStream << "<Measures>\n";
-		for (auto i = 0; i < strings.size(); ++i)
+		for (auto i = 0; i < measures.size(); ++i)
 			measures[i].addToXML(outputStream, indentLevel + 2);
 		addSpacingToXML(outputStream, indentLevel + 1);
 		outputStream << "</Measures>\n";
