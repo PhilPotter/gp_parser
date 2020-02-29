@@ -9,11 +9,11 @@ template <class T>
 void addObjectsToXML(const std::string& name, const std::vector<T>& objects, std::ostringstream& outputStream, std::int32_t indentLevel)
 {
   if (objects.size() > 0) {
-    addSpacingToXML(outputStream, indentLevel + 1);
+    addSpacingToXML(outputStream, indentLevel);
     outputStream << "<" << name << ">\n";
     for (auto i = 0; i < objects.size(); ++i)
-      objects[i].addToXML(outputStream, indentLevel + 2);
-    addSpacingToXML(outputStream, indentLevel + 1);
+      objects[i].addToXML(outputStream, indentLevel + 1);
+    addSpacingToXML(outputStream, indentLevel);
     outputStream << "</" << name << ">\n";
   }
 }
@@ -66,7 +66,7 @@ std::string Parser::getXML() const
 	outputStream << XML_SPACING << "<KeySignature>" << static_cast<std::int32_t>(globalKeySignature) << "</KeySignature>\n";
 
 	// Output channels
-	addObjectsToXML("Channels", channels, outputStream, 0);
+	addObjectsToXML("Channels", channels, outputStream, 1);
 
 	// Output measures
 	outputStream << XML_SPACING << "<Measures>" << measures << "</Measures>\n";
@@ -75,10 +75,10 @@ std::string Parser::getXML() const
 	outputStream << XML_SPACING << "<TrackCount>" << trackCount << "</TrackCount>\n";
 
 	// Output measure headers
-	addObjectsToXML("MeasureHeaders", measureHeaders, outputStream, 0);
+	addObjectsToXML("MeasureHeaders", measureHeaders, outputStream, 1);
 
 	// Output tracks
-    addObjectsToXML("Tracks", tracks, outputStream, 0);
+    addObjectsToXML("Tracks", tracks, outputStream, 1);
 
 	// Output closing tag
 	outputStream << "</TabFile>\n";
@@ -137,7 +137,7 @@ void Channel::addToXML(std::ostringstream& outputStream, std::int32_t indentLeve
 	addSpacingToXML(outputStream, indentLevel + 1);
 	outputStream << "<IsPercussionChannel>" << (isPercussionChannel ? "true" : "false")
 		     << "</IsPercussionChannel>\n";
-	addObjectsToXML("ChannelParameters", parameters, outputStream, indentLevel);
+	addObjectsToXML("ChannelParameters", parameters, outputStream, indentLevel + 1);
 
 	addSpacingToXML(outputStream, indentLevel);
 	outputStream << "</Channel>\n";
@@ -280,8 +280,8 @@ void Track::addToXML(std::ostringstream& outputStream, std::int32_t indentLevel)
 	outputStream << "<Offset>" << offset << "</Offset>\n";
 	lyrics.addToXML(outputStream, indentLevel + 1);
 	color.addToXML(outputStream, indentLevel + 1);
-	addObjectsToXML("Strings", strings, outputStream, indentLevel);
-	addObjectsToXML("Measures", measures, outputStream, indentLevel);
+	addObjectsToXML("Strings", strings, outputStream, indentLevel + 1);
+	addObjectsToXML("Measures", measures, outputStream, indentLevel + 1);
 
 	addSpacingToXML(outputStream, indentLevel);
 	outputStream << "</Track>\n";
@@ -313,7 +313,7 @@ void Measure::addToXML(std::ostringstream& outputStream, std::int32_t indentLeve
 	outputStream << "<KeySignature>" << static_cast<std::int32_t>(keySignature) << "</KeySignature>\n";
 	addSpacingToXML(outputStream, indentLevel + 1);
 	outputStream << "<Clef>" << clef << "</Clef>\n";
-    addObjectsToXML("Beats", beats, outputStream, indentLevel);
+    addObjectsToXML("Beats", beats, outputStream, indentLevel + 1);
 
 	addSpacingToXML(outputStream, indentLevel);
 	outputStream << "</Measure>\n";
@@ -329,7 +329,7 @@ void Beat::addToXML(std::ostringstream& outputStream, std::int32_t indentLevel) 
 	text.addToXML(outputStream, indentLevel + 1);
 	stroke.addToXML(outputStream, indentLevel + 1);
 	chord.addToXML(outputStream, indentLevel + 1);
-	addObjectsToXML("Voices", voices, outputStream, indentLevel);
+	addObjectsToXML("Voices", voices, outputStream, indentLevel + 1);
 
 	addSpacingToXML(outputStream, indentLevel);
 	outputStream << "</Beat>\n";
@@ -369,7 +369,7 @@ void Chord::addToXML(std::ostringstream& outputStream, std::int32_t indentLevel)
 	addSpacingToXML(outputStream, indentLevel + 1);
 	outputStream << "<Name>" << name << "</Name>\n";
 	if (strings != nullptr) {
-      addObjectsToXML("Strings", *strings, outputStream, indentLevel);
+      addObjectsToXML("Strings", *strings, outputStream, indentLevel + 1);
     }
 	if (frets.size() > 0) {
 		addSpacingToXML(outputStream, indentLevel + 1);
@@ -395,7 +395,7 @@ void Voice::addToXML(std::ostringstream& outputStream, std::int32_t indentLevel)
 	outputStream << "<Empty>" << (empty ? "true" : "false") << "</Empty>\n";
 	addSpacingToXML(outputStream, indentLevel + 1);
 	outputStream << "<Duration>" << duration << "</Duration>\n";
-	addObjectsToXML("Notes", notes, outputStream, indentLevel);
+	addObjectsToXML("Notes", notes, outputStream, indentLevel + 1);
 
 	addSpacingToXML(outputStream, indentLevel);
 	outputStream << "</Voice>\n";
@@ -469,7 +469,7 @@ void TremoloBar::addToXML(std::ostringstream& outputStream, std::int32_t indentL
 	addSpacingToXML(outputStream, indentLevel);
 	outputStream << "<TremoloBar>\n";
 
-	addObjectsToXML("Points", points, outputStream, indentLevel);
+	addObjectsToXML("Points", points, outputStream, indentLevel + 1);
 
 	addSpacingToXML(outputStream, indentLevel);
 	outputStream << "</TremoloBar>\n";
@@ -517,7 +517,7 @@ void Bend::addToXML(std::ostringstream& outputStream, std::int32_t indentLevel) 
 	addSpacingToXML(outputStream, indentLevel);
 	outputStream << "<Bend>\n";
 
-	addObjectsToXML("BendPoints", points, outputStream, indentLevel);
+	addObjectsToXML("BendPoints", points, outputStream, indentLevel + 1);
 
 	addSpacingToXML(outputStream, indentLevel);
 	outputStream << "</Bend>\n";
