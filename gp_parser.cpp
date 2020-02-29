@@ -177,7 +177,7 @@ Parser::Parser(const char *filePath)
 	// Iterate through measures
 	auto tempo = Tempo();
 	tempo.value = tempoValue;
-	auto start = QUARTER_TIME;
+	auto start = 0;
 	for (auto i = 0; i < measures; ++i) {
 		auto& header = measureHeaders[i];
 		header.start = start;
